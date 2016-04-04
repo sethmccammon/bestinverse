@@ -12,8 +12,12 @@ import numpy as np
 def main():
 
   
-
-  cap = cv2.VideoCapture('../data/sample2.mp4')
+  #From Video
+  #cap = cv2.VideoCapture('../data/sample2.mp4')
+  
+  #Webcam Support
+  #cap = cv2.VideoCapture(0)
+  
 
   ret, frame = cap.read()
 
@@ -44,18 +48,16 @@ def main():
   while(cap.isOpened()):
       ret, frame = cap.read()
 
+
+
       frame = cv2.pyrDown(cv2.pyrDown(frame))
       #frame = cv2.GaussianBlur(frame, (11, 11), 0)
 
-      gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+      cv2.imshow("Live", frame)
+      
       hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-
-
-
-      # Threshold the HSV image to get only blue colors
-      # yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
-      # red_mask = cv2.inRange(hsv, lower_red, upper_red)
 
 
       green_mask = cv2.inRange(hsv, green_lower_bound, green_upper_bound)
@@ -80,60 +82,62 @@ def main():
 
 
       max_area = 0
-
+      max_contour = False
       for cnt in contours:        
         area = cv2.contourArea(cnt)
         if area > max_area:
           max_area = area
           max_contour = cnt
 
-      hull = cv2.convexHull(max_contour)
-      circle_mask = np.zeros(red_mask.shape, np.uint8)
-      cv2.drawContours(circle_mask, [hull],-1, 255,-1)
+
+      if contours:
+        hull = cv2.convexHull(max_contour)
+        circle_mask = np.zeros(red_mask.shape, np.uint8)
+        cv2.drawContours(circle_mask, [hull],-1, 255,-1)
 
 
 
-      final_mask_a = cv2.bitwise_and(circle_mask, red_mask)
-      final_mask_b = cv2.bitwise_and(circle_mask, green_mask)
-      final_mask_c = cv2.bitwise_and(circle_mask, yellow_mask)
+        final_mask_a = cv2.bitwise_and(circle_mask, red_mask)
+        final_mask_b = cv2.bitwise_and(circle_mask, green_mask)
+        final_mask_c = cv2.bitwise_and(circle_mask, yellow_mask)
 
 
-      area_bounds = [200, 1000]
-      fish_contours = []
+        area_bounds = [200, 1000]
+        fish_contours = []
 
-      contours, hierarchy = cv2.findContours(final_mask_a.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-      for cnt in contours:        
-        area = cv2.contourArea(cnt)
-        if (area > area_bounds[0]) and (area < area_bounds[1]):
-          fish_contours.append(cnt)
+        contours, hierarchy = cv2.findContours(final_mask_a.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:        
+          area = cv2.contourArea(cnt)
+          if (area > area_bounds[0]) and (area < area_bounds[1]):
+            fish_contours.append(cnt)
 
-      contours, hierarchy = cv2.findContours(final_mask_b.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-      for cnt in contours:        
-        area = cv2.contourArea(cnt)
-        if (area > area_bounds[0]) and (area < area_bounds[1]):
-          fish_contours.append(cnt)
-      
-      contours, hierarchy = cv2.findContours(final_mask_c.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-      for cnt in contours:        
-        area = cv2.contourArea(cnt)
-        if (area > area_bounds[0]) and (area < area_bounds[1]):
-          fish_contours.append(cnt)
-
-
-      for ii in range(0, len(fish_contours)):
-        fish_contours[ii] = cv2.convexHull(fish_contours[ii])
-        x,y,w,h = cv2.boundingRect(fish_contours[ii])
-        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+        contours, hierarchy = cv2.findContours(final_mask_b.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:        
+          area = cv2.contourArea(cnt)
+          if (area > area_bounds[0]) and (area < area_bounds[1]):
+            fish_contours.append(cnt)
+        
+        contours, hierarchy = cv2.findContours(final_mask_c.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:        
+          area = cv2.contourArea(cnt)
+          if (area > area_bounds[0]) and (area < area_bounds[1]):
+            fish_contours.append(cnt)
 
 
-      final_mask = cv2.bitwise_or(cv2.bitwise_or(final_mask_a, final_mask_b), final_mask_c)
+        for ii in range(0, len(fish_contours)):
+          fish_contours[ii] = cv2.convexHull(fish_contours[ii])
+          x,y,w,h = cv2.boundingRect(fish_contours[ii])
+          cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
 
-      final_mask = morphology(final_mask)
 
-      diff = cv2.subtract(yellow_mask, circle_mask)
+        final_mask = cv2.bitwise_or(cv2.bitwise_or(final_mask_a, final_mask_b), final_mask_c)
 
-      cv2.imshow('Frame', frame)
-      #cv2.imshow('Red', diff)
+        final_mask = morphology(final_mask)
+
+        diff = cv2.subtract(yellow_mask, circle_mask)
+
+        cv2.imshow('Frame', frame)
+        cv2.imshow('Red', diff)
 
 
 
@@ -143,6 +147,10 @@ def main():
   cap.release()
   cv2.destroyAllWindows()
 
+
+
+def getFishContours(frame):
+  return 0
 
 
 def auto_canny(image, sigma=0.1):
