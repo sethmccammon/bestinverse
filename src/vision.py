@@ -13,7 +13,7 @@ def main():
 
   
 
-  cap = cv2.VideoCapture('../data/sample_missing.mp4')
+  cap = cv2.VideoCapture('../data/sample2.mp4')
 
   ret, frame = cap.read()
 
@@ -98,14 +98,42 @@ def main():
       final_mask_c = cv2.bitwise_and(circle_mask, yellow_mask)
 
 
+      area_bounds = [200, 1000]
+      fish_contours = []
+
+      contours, hierarchy = cv2.findContours(final_mask_a.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+      for cnt in contours:        
+        area = cv2.contourArea(cnt)
+        if (area > area_bounds[0]) and (area < area_bounds[1]):
+          fish_contours.append(cnt)
+
+      contours, hierarchy = cv2.findContours(final_mask_b.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+      for cnt in contours:        
+        area = cv2.contourArea(cnt)
+        if (area > area_bounds[0]) and (area < area_bounds[1]):
+          fish_contours.append(cnt)
+      
+      contours, hierarchy = cv2.findContours(final_mask_c.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+      for cnt in contours:        
+        area = cv2.contourArea(cnt)
+        if (area > area_bounds[0]) and (area < area_bounds[1]):
+          fish_contours.append(cnt)
+
+
+      for ii in range(0, len(fish_contours)):
+        fish_contours[ii] = cv2.convexHull(fish_contours[ii])
+        x,y,w,h = cv2.boundingRect(fish_contours[ii])
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+
+
       final_mask = cv2.bitwise_or(cv2.bitwise_or(final_mask_a, final_mask_b), final_mask_c)
 
       final_mask = morphology(final_mask)
 
       diff = cv2.subtract(yellow_mask, circle_mask)
 
-      cv2.imshow('Frame', final_mask)
-      cv2.imshow('Red', diff)
+      cv2.imshow('Frame', frame)
+      #cv2.imshow('Red', diff)
 
 
 
