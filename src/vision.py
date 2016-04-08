@@ -13,37 +13,24 @@ def main():
 
   
   #From Video
-  #cap = cv2.VideoCapture('../data/sample2.mp4')
-  
+  cap = cv2.VideoCapture('../data/sample2.mp4')
+
   #Webcam Support
-  #cap = cv2.VideoCapture(0)
+  #cap = cv2.VideoCapture(1)
   
 
   ret, frame = cap.read()
-
   frame = cv2.pyrDown(cv2.pyrDown(frame))
 
+
+
   height, width = frame.shape[:2]
+
+  video = cv2.VideoWriter('vision_demo.avi', cv2.cv.CV_FOURCC(*'XVID'),30,(width,height))
+  print "Video Open:", video.isOpened()
+
+
   ff_mask = np.zeros((height+2,width+2),np.uint8)
-
-  #Blue
-  blue_lower_bound = np.array([95,0,0], np.uint8)
-  blue_upper_bound = np.array([105,255,255], np.uint8)
-
-  #Yellow
-  yellow_lower_bound = np.array([20,0,0], np.uint8)
-  yellow_upper_bound = np.array([30,255,255], np.uint8)
-
-  #green
-  green_lower_bound = np.array([65,0,0], np.uint8)
-  green_upper_bound = np.array([80,255,255], np.uint8)
-
-  #Red/Orange
-  red_lower_bound_1 = np.array([175,0,0], np.uint8)
-  red_upper_bound_1 = np.array([180,255,255], np.uint8)
-
-  red_lower_bound_2 = np.array([0,0,0], np.uint8)
-  red_upper_bound_2 = np.array([10,255,255], np.uint8)
 
   while(cap.isOpened()):
       ret, frame = cap.read()
@@ -58,25 +45,10 @@ def main():
       
       hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-
-
-      green_mask = cv2.inRange(hsv, green_lower_bound, green_upper_bound)
-      yellow_mask = cv2.inRange(hsv, yellow_lower_bound, yellow_upper_bound)
-
-      blue_mask = cv2.inRange(hsv, blue_lower_bound, blue_upper_bound)
-
-
-      mask_1 = cv2.inRange(hsv, red_lower_bound_1, red_upper_bound_1)
-      mask_2 = cv2.inRange(hsv, red_lower_bound_2, red_upper_bound_2)
-
-      red_mask = cv2.bitwise_or(mask_2, mask_1)
-
-
-      red_mask = morphology(red_mask)
-      green_mask = morphology(green_mask)
-      yellow_mask = morphology(yellow_mask)
-
-
+      red_mask = maskRed(hsv)
+      blue_mask = maskBlue(hsv)
+      green_mask = maskGreen(hsv)
+      yellow_mask = maskYellow(hsv)
 
       contours, hierarchy = cv2.findContours(blue_mask.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
@@ -138,20 +110,52 @@ def main():
 
         cv2.imshow('Frame', frame)
         cv2.imshow('Red', diff)
-
-
+        video.write(frame)
 
       if cv2.waitKey(1) & 0xFF == ord('q'):
           break
 
   cap.release()
+  video.release()
   cv2.destroyAllWindows()
 
 
 
-def getFishContours(frame):
-  return 0
 
+
+
+def maskRed(img_in):
+  red_lower_bound_1 = np.array([175,0,0], np.uint8)
+  red_upper_bound_1 = np.array([180,255,255], np.uint8)
+
+  red_lower_bound_2 = np.array([0,0,0], np.uint8)
+  red_upper_bound_2 = np.array([10,255,255], np.uint8)
+
+  mask_1 = cv2.inRange(img_in, red_lower_bound_1, red_upper_bound_1)
+  mask_2 = cv2.inRange(img_in, red_lower_bound_2, red_upper_bound_2)
+
+  red_mask = cv2.bitwise_or(mask_2, mask_1)
+  return red_mask
+
+def maskBlue(img_in):
+  blue_lower_bound = np.array([105,0,0], np.uint8)
+  blue_upper_bound = np.array([115,255,255], np.uint8)
+
+  blue_mask = cv2.inRange(img_in, blue_lower_bound, blue_upper_bound)
+  #return morphology(blue_mask)
+  return blue_mask
+
+def maskGreen(img_in):
+  green_lower_bound = np.array([65,0,0], np.uint8)
+  green_upper_bound = np.array([80,255,255], np.uint8)
+  green_mask = cv2.inRange(img_in, green_lower_bound, green_upper_bound)
+  return morphology(green_mask)
+
+def maskYellow(img_in):
+  yellow_lower_bound = np.array([20,0,0], np.uint8)
+  yellow_upper_bound = np.array([30,255,255], np.uint8)
+  yellow_mask = cv2.inRange(img_in, yellow_lower_bound, yellow_upper_bound)
+  return morphology(yellow_mask)
 
 def auto_canny(image, sigma=0.1):
   # compute the median of the single channel pixel intensities
