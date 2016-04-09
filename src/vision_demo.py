@@ -1,4 +1,4 @@
-from vision import maskRed, maskBlue
+from vision import maskRed, maskBlue, maskGreen, maskYellow
 from serialcomm import serialComm
 import operator
 import cv2
@@ -20,12 +20,12 @@ def demo():
     frame = cv2.GaussianBlur(frame, (11, 11), 0)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    red_mask = maskBlue(hsv)
+    color_mask = maskBlue(hsv)
     area_bounds = [200, 1000]
-    contours, hierarchy = cv2.findContours(red_mask.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(color_mask.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 
-    cv2.imshow('Red Mask', red_mask)
+    cv2.imshow('Red Mask', color_mask)
     
     if contours:
       max_area = -1
@@ -41,8 +41,11 @@ def demo():
       ctr = (x+(w/2), y+(h/2))
       cv2.circle(frame, ctr, 5, (0,0,0),2)
       diff = map(operator.sub, img_ctr, ctr)
-      #print diff[0]
-      comm.sendPacket(struct.pack('!b', diff[0]))
+      print diff
+      msg = struct.pack('!b', -diff[1])
+      msg = msg + "$" +struct.pack('!b', diff[0])
+
+      comm.sendPacket(msg)
       
     cv2.imshow('Object_Id', frame)
 

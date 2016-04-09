@@ -125,10 +125,10 @@ def main():
 
 
 def maskRed(img_in):
-  red_lower_bound_1 = np.array([175,0,0], np.uint8)
+  red_lower_bound_1 = np.array([175,50,50], np.uint8)
   red_upper_bound_1 = np.array([180,255,255], np.uint8)
 
-  red_lower_bound_2 = np.array([0,0,0], np.uint8)
+  red_lower_bound_2 = np.array([0,50,50], np.uint8)
   red_upper_bound_2 = np.array([10,255,255], np.uint8)
 
   mask_1 = cv2.inRange(img_in, red_lower_bound_1, red_upper_bound_1)
@@ -138,7 +138,7 @@ def maskRed(img_in):
   return red_mask
 
 def maskBlue(img_in):
-  blue_lower_bound = np.array([105,0,0], np.uint8)
+  blue_lower_bound = np.array([105,50,50], np.uint8)
   blue_upper_bound = np.array([115,255,255], np.uint8)
 
   blue_mask = cv2.inRange(img_in, blue_lower_bound, blue_upper_bound)
@@ -146,13 +146,13 @@ def maskBlue(img_in):
   return blue_mask
 
 def maskGreen(img_in):
-  green_lower_bound = np.array([65,0,0], np.uint8)
+  green_lower_bound = np.array([65,50,50], np.uint8)
   green_upper_bound = np.array([80,255,255], np.uint8)
   green_mask = cv2.inRange(img_in, green_lower_bound, green_upper_bound)
   return morphology(green_mask)
 
 def maskYellow(img_in):
-  yellow_lower_bound = np.array([20,0,0], np.uint8)
+  yellow_lower_bound = np.array([20,50,50], np.uint8)
   yellow_upper_bound = np.array([30,255,255], np.uint8)
   yellow_mask = cv2.inRange(img_in, yellow_lower_bound, yellow_upper_bound)
   return morphology(yellow_mask)
