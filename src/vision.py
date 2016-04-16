@@ -1,4 +1,24 @@
 
+import cv2
+import matplotlib.pyplot as plt
+
+
+
+
+
+
+
+
+
+img = cv2.imread('../data/image1.jpg')
+orb = cv2.ORB()
+
+kp, des = orb.detectAndCompute(img,None)
+print len(kp)
+img_res = cv2.drawKeypoints(img,kp, color=(0,255,0), flags=0)
+plt.imshow(img_res),plt.show()
+
+
 ##THIS CODE IS PROBABLY BROKEN
 
 # import cv2
