@@ -8,8 +8,8 @@ from vision_utils import findCircleMask, getFrame, drawMatches
 
 
 def main():
-
-  
+  min_matches = 10
+  max_matches = 40
   #From Video
   #cap = cv2.VideoCapture('../data/sample2.mp4')
 
@@ -34,19 +34,23 @@ def main():
     frame = getFrame(cap)
     frame2 = getFrame(cap2)
 
+
+
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
 
+    masked_frame = cv2.bitwise_and(circle_mask, frame)
+    masked_frame2 = cv2.bitwise_and(circle_mask2, frame2)
 
 
     img = cv2.imread('../data/image1.jpg')
 
 
-    kp1, des1 = orb.detectAndCompute(frame,None)
-    kp2, des2 = orb.detectAndCompute(frame2,None)
+    kp1, des1 = orb.detectAndCompute(masked_frame, None)
+    kp2, des2 = orb.detectAndCompute(masked_frame2, None)
 
-    feature_frame = cv2.drawKeypoints(frame,kp1, color=(0,255,0), flags=0)
-    feature_frame2 = cv2.drawKeypoints(frame2,kp2, color=(0,255,0), flags=0)
+    feature_frame = cv2.drawKeypoints(frame, kp1, color=(0,255,0), flags=0)
+    feature_frame2 = cv2.drawKeypoints(frame2, kp2, color=(0,255,0), flags=0)
 
     # create BFMatcher object
     
@@ -55,8 +59,26 @@ def main():
     matches = bf.match(des1,des2)
     matches = sorted(matches, key = lambda x:x.distance)
 
+
+    # print [ kp1[idx].pt for idx, m in enumerate(matches)]
+
+    if len(matches) > min_matches:
+      matches = matches[:max_matches]
+      src_pts = np.float32([ kp1[idx].pt for idx, m in enumerate(matches)]).reshape(-1,1,2)
+      dst_pts = np.float32([ kp2[idx].pt for idx, m in enumerate(matches)]).reshape(-1,1,2)
+
+      
+      # print src_pts
+
+      M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+      frame3 = cv2.warpPerspective(frame, M, frame.shape[:2])
+      cv2.imshow("Frame3", frame3)
+
+
+
+
     # Draw first 10 matches.
-    img3 = drawMatches(frame,kp1,frame2,kp2,matches[:10])
+    img3 = drawMatches(frame, kp1, frame2, kp2, matches[:20])
 
     
 
@@ -83,6 +105,9 @@ def main():
 
     cv2.imshow("Frame", frame)
     cv2.imshow("Frame2", frame2)
+
+
+
 
     cv2.imshow("Features", feature_frame)
     cv2.imshow("Features 2", feature_frame2)
