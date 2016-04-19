@@ -14,8 +14,12 @@ def main():
   #cap = cv2.VideoCapture('../data/sample2.mp4')
 
   #Webcam Support
+
+
+
   cap = cv2.VideoCapture(1)
   cap2 = cv2.VideoCapture(2)
+
 
   ret, frame = cap.read()
   ret2, frame2 = cap2.read()
@@ -23,12 +27,22 @@ def main():
   frame = cv2.pyrDown(frame)
   frame2 = cv2.pyrDown(frame2)
 
+
+  gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  gray_frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
+  img3 = drawMatches(gray_frame, [], gray_frame2, [],[])
+  height, width = img3.shape[:2]
+  print "height", height, "width", width
+
   circle_mask = findCircleMask(frame)
   circle_mask2 = findCircleMask(frame2)
 
   orb = cv2.ORB()
   bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
+
+  video = cv2.VideoWriter('stereo_demo.avi', cv2.cv.CV_FOURCC(*'XVID'),30,(width,height))
+  print "Video Open:", video.isOpened()
 
   while cap.isOpened() and cap2.isOpened():
     frame = getFrame(cap)
@@ -71,15 +85,18 @@ def main():
       # print src_pts
 
       M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+      print type(M)
       frame3 = cv2.warpPerspective(frame, M, frame.shape[:2])
-      cv2.imshow("Frame3", frame3)
+      # cv2.imshow("Frame3", frame3)
+      
 
 
-
+    # gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # gray_frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
 
     # Draw first 10 matches.
     img3 = drawMatches(frame, kp1, frame2, kp2, matches[:20])
-
+    video.write(img3)
     
 
 
@@ -103,14 +120,14 @@ def main():
 
 
 
-    cv2.imshow("Frame", frame)
-    cv2.imshow("Frame2", frame2)
+    # cv2.imshow("Frame", frame)
+    # cv2.imshow("Frame2", frame2)
 
 
 
 
-    cv2.imshow("Features", feature_frame)
-    cv2.imshow("Features 2", feature_frame2)
+    # cv2.imshow("Features", feature_frame)
+    # cv2.imshow("Features 2", feature_frame2)
 
     cv2.imshow("Matches", img3)
 
@@ -118,6 +135,11 @@ def main():
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
       break
+
+  cap.release()
+  video.release()
+  cv2.destroyAllWindows()
+
 
 
 
