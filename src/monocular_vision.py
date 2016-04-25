@@ -1,48 +1,133 @@
 import cv2
 import numpy as np
-from vision_utils import getFrame, findCircleMask
+from vision_utils import getFrame, findCircleMask, findFish
+from utils import dist
 import math
 
 
-def main():
-  board_template = cv2.imread('../data/board_template.jpg')
+ramp_pts = []
 
-
+def main(): 
+  calibrateVision()
   cap = cv2.VideoCapture(1)
-
   frame = getFrame(cap)
-  height, width = board_template.shape[:2]
-  print width, height
-
   circle_mask = findCircleMask(frame)
-  contours, hierarchy = cv2.findContours(circle_mask.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-
-  max_contour = getLargestContour(contours)
-  ellipse = cv2.fitEllipse(max_contour)
-  T = calcCircleTransform(ellipse)
-  print T
   while cap.isOpened():
-    # cv2.imshow("temp", board_template)
     frame = getFrame(cap)
-    cv2.ellipse(frame,ellipse,(0,255,0),2)
-    # cv2.ellipse(frame,(center, size, 90), (255, 0, 2))
-    # cv2.circle(frame, center, 2, (0,255,0))
-    aug_frame = cv2.warpAffine(board_template, np.delete(T, 2, 0), (width, height))
 
-    cv2.imshow("Aug Frame", aug_frame)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.bitwise_and(gray, circle_mask)
+    cv2.imshow("Gray", gray)
+
+
+    for pt in ramp_pts:
+      cv2.circle(frame, pt, 2, (255, 255, 0), 2)
+    
+
+    fish_contours = findFish(frame, circle_mask)
+    filtered_fish_contours = filterFish(fish_contours)
+
+
+    for ii in range(0, len(filtered_fish_contours)):
+      filtered_fish_contours[ii] = cv2.convexHull(filtered_fish_contours[ii])
+
+      (x,y),radius = cv2.minEnclosingCircle(filtered_fish_contours[ii])
+      center = (int(x),int(y))
+      radius = int(radius)
+      cv2.circle(frame,center,radius,(0,255,0),2)
+
+
+      for ramp_pt in ramp_pts:
+        if dist(ramp_pt, center) < radius:
+          cv2.circle(frame,center,radius,(0,255,0),2)
+          break
+      else:
+        cv2.circle(frame,center,radius,(0,0,255),2)
+      # for ramp_pt in ramp_pts:
+      #   if inRect(ramp_pt, (x,y), (x+w,y+h)):
+      #     cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+      #     break
+      # else:
+      #   cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+
 
     cv2.imshow("Frame", frame)
-    cv2.imshow("Circle Mask", circle_mask)
-
-
-
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
       break
 
 
 
+def filterFish(fish_contours):
+  centers = []
+  radii = []
+
+  margin = .25
+
+  for ii in range(0, len(fish_contours)):
+    fish_contours[ii] = cv2.convexHull(fish_contours[ii])
+
+    (x,y),radius = cv2.minEnclosingCircle(fish_contours[ii])
+    centers.append((int(x),int(y)))
+    radii.append(int(radius))
+    
+  med_radius = np.median(radii)
+
+  final_contours = []
+  for ii in range(0, len(fish_contours)):
+    if (radii[ii] < med_radius * (1+margin)) and (radii[ii] > med_radius * (1-margin)):
+      final_contours.append(fish_contours[ii])
+
+  return final_contours
+
+
+
+def inRect(query, p1, p2):
+  if query[0] in range(p1[0], p2[0]) and query[1] in range(p1[1], p2[1]):
+    return True
+  else:
+    return False
+
+
+
+def calibrateVision():
+  global ramp_pts
+
+
+  cap = cv2.VideoCapture(1)
+  cv2.namedWindow("Frame")
+  cv2.setMouseCallback("Frame", getPixelLoc)
+
+  while cap.isOpened():
+    frame = getFrame(cap)
+    cv2.imshow("Frame", frame)
+
+    if len(ramp_pts) > 7:
+      cv2.setMouseCallback("Frame", nullCallback)
+      break
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+      break
+
+  cap.release()
+  cv2.destroyAllWindows()
+
+  print "Calibration Complete"
+  raw_input()
+
+
+def nullCallback(event, x, y, flags, param):
+  None
+
+
+def getPixelLoc(event, x, y, flags, param):
+  global ramp_pts
+  if event == cv2.EVENT_LBUTTONDOWN:
+    print "Left Image:", x, y
+    ramp_pts.append((x,y))
+    # return [x, y]
+  # cv2.setMouseCallback("image", click_and_crop)
 
 def getLargestContour(contours):
   max_area = -1

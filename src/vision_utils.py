@@ -57,7 +57,8 @@ def maskYellow(img_in):
 
 def getFrame(cap):
   ret, frame = cap.read()
-  return cv2.pyrDown(frame)
+  return frame
+  #return cv2.pyrDown(frame)
 
 def findCircleMask(frame):
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -148,3 +149,32 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 
   # Show the image
   return out
+
+def findFish(frame, circle_mask):
+  kernel = np.ones((3,3),np.uint8)
+  hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+
+  color_mask = maskBlue(hsv)
+  color_mask = cv2.bitwise_and(color_mask, circle_mask)
+  color_mask = cv2.bitwise_or(color_mask, cv2.bitwise_not(circle_mask))
+  color_mask = cv2.bitwise_not(color_mask)
+  color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
+  color_mask = cv2.GaussianBlur(color_mask, (3, 3), 0)
+
+
+
+  canny_frame = autoCanny(color_mask, .2)
+  canny_frame = cv2.bitwise_and(circle_mask, canny_frame)
+  contours, hierarchy = cv2.findContours(canny_frame,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+  fish_contours = []
+  min_area = 250
+  for cnt in contours:
+    hull = cv2.convexHull(cnt)
+    area = cv2.contourArea(hull)
+    if (area > min_area):
+     
+      fish_contours.append(hull)
+
+  return fish_contours
