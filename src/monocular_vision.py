@@ -11,6 +11,8 @@ def main():
   calibrateVision()
   cap = cv2.VideoCapture(1)
   frame = getFrame(cap)
+  height, width = frame.shape[:2]
+  video = cv2.VideoWriter('detection_demo.avi', cv2.cv.CV_FOURCC(*'XVID'),30,(width,height))
   circle_mask = findCircleMask(frame)
 
   while cap.isOpened():
@@ -51,7 +53,7 @@ def main():
       # else:
       #   cv2.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
 
-
+    video.write(frame)
     cv2.imshow("Frame", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
