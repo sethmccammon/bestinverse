@@ -1,4 +1,4 @@
-import sys, select, termios, tty, struct
+import sys, select, termios, tty
 from serialcomm import serialComm
 
 
