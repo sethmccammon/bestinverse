@@ -102,7 +102,10 @@ def calibrateVision():
   cv2.setMouseCallback("Frame", getPixelLoc)
 
   while cap.isOpened():
+
     frame = getFrame(cap)
+    for pt in ramp_pts:
+      cv2.circle(frame, pt, 2, (255, 255, 0), 2)
     cv2.imshow("Frame", frame)
 
     if len(ramp_pts) > 7:

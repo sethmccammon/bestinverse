@@ -4,8 +4,17 @@ from time import sleep
 class serialComm:
   def __init__(self, port_in = '/dev/ttyACM0'):
     self.port = port_in
-    self.ser = serial.Serial(self.port)
-    self.max_msg_len = 16
+    self.valid = False
+    try:
+      self.ser = serial.Serial(self.port, 9600, timeout=10)
+      self.valid = True
+      self.max_msg_len = 16
+
+    except serial.serialutil.SerialException:
+      print 'Error: Comm Closed'
+
+
+
 
   def sendPacket(self, msg, timeout = .1):
     max_msg_len = 16
