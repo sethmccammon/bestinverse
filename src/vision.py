@@ -53,9 +53,9 @@ def calibrateRamps(cap):
   return ramp_pts
 
 
-def calibrateRobot(cap):
+def calibrateBoard(cap):
   global robot_pts
-
+  calib_dist = 7.875
 
   # cap = cv2.VideoCapture(1)
   cv2.setMouseCallback("Frame", getRobotPixelLoc)
@@ -75,8 +75,8 @@ def calibrateRobot(cap):
       break
 
   pt_dist = dist(robot_pts[1], robot_pts[0])
-  pixel_len = 10/pt_dist
-  return pixel_len
+  pixel_len = calib_dist/pt_dist
+  return pixel_len, robot_pts
 
 
 def filterFish(fish_contours):

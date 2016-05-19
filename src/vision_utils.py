@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from utils import midpoint, dist
 
 def autoCanny(image, sigma=0.5):
   # compute the median of the single channel pixel intensities
@@ -59,6 +60,18 @@ def getFrame(cap):
   ret, frame = cap.read()
   return frame
   #return cv2.pyrDown(frame)
+
+
+def makeCircleMask(frame, pts):
+  circle_mask = np.zeros(frame.shape, np.uint8)
+  center = midpoint(pts[0], pts[1])
+  center_pixel = tuple(map(int, center))
+  radius = int(dist(pts[0], pts[1])/2)
+
+  cv2.circle(circle_mask, center_pixel, radius, (255, 255, 255),-1)
+  #circle_mask = cv2.cvtColor(circle_mask, cv2.COLOR_BGR2GRAY)
+  return circle_mask, center, radius
+
 
 def findCircleMask(frame):
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -153,11 +166,11 @@ def drawMatches(img1, kp1, img2, kp2, matches):
 def findFish(frame, circle_mask):
   kernel = np.ones((3,3),np.uint8)
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
+  gray_circle_mask = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
   color_mask = maskBlue(hsv)
-  color_mask = cv2.bitwise_and(color_mask, circle_mask)
-  color_mask = cv2.bitwise_or(color_mask, cv2.bitwise_not(circle_mask))
+  color_mask = cv2.bitwise_and(color_mask, gray_circle_mask)
+  color_mask = cv2.bitwise_or(color_mask, cv2.bitwise_not(gray_circle_mask))
   color_mask = cv2.bitwise_not(color_mask)
   color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, kernel)
   color_mask = cv2.GaussianBlur(color_mask, (3, 3), 0)
@@ -165,7 +178,7 @@ def findFish(frame, circle_mask):
 
 
   canny_frame = autoCanny(color_mask, .2)
-  canny_frame = cv2.bitwise_and(circle_mask, canny_frame)
+  canny_frame = cv2.bitwise_and(gray_circle_mask, canny_frame)
   contours, hierarchy = cv2.findContours(canny_frame,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
   fish_contours = []
