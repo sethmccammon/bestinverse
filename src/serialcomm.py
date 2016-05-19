@@ -37,11 +37,17 @@ def buildMsg(msg_type, args = []):
     if len(args) is not 2:
       print "Incorrect Args for type: GOTO"
     else:
-      msg = '1:'
-      msg = msg + str(int(args[0]))#struct.pack('!b', args[0])
-      msg = msg + "," + str(int(args[1]))#struct.pack('!b', args[1])
-  if msg_type == 1: #Calibration
+      msg = "0:" + ("%.3f" % args[0]) + "," + ("%.3f" % args[1])
+
+  elif msg_type == 1: #Calibration
+    msg = "1:"
+
+  elif msg_type == 2: #go fishing
     msg = "2:"
+
+  elif msg_type == 3: #deposit Fish
+    msg = "3:"
+
   else:
     print "Invalid Message Type"
     return None

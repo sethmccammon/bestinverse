@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
-from utils import midpoint, dist
+import operator
+from utils import midpoint, dist, normalize
+
+
 
 def autoCanny(image, sigma=0.5):
   # compute the median of the single channel pixel intensities
@@ -191,3 +194,21 @@ def findFish(frame, circle_mask):
       fish_contours.append(hull)
 
   return fish_contours
+
+
+def pixel2in(px, reference_pt, scale, offset = [1.25, 11.875]):
+  loc_pixels = map(operator.sub, px, reference_pt)
+  #translate Axes
+  loc_pixels = [-loc_pixels[1], -loc_pixels[0]]
+
+  #translate pixels to inches
+  loc_inches = map(operator.mul, loc_pixels, [scale, scale])
+  #add offset from reference point to 0, 0
+  loc_inches = map(operator.add, loc_inches, offset)
+
+  return loc_inches
+
+
+
+
+

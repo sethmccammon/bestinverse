@@ -2,10 +2,10 @@
 import cv2
 from serialcomm import serialComm, buildMsg
 from vision import calibrateRamps, calibrateBoard, filterFish
-from vision_utils import getFrame, findCircleMask, findFish, makeCircleMask
+from vision_utils import getFrame, findCircleMask, findFish, makeCircleMask, pixel2in
 from utils import dist
 import numpy as np
-
+import random
 
 
 
@@ -14,6 +14,17 @@ import numpy as np
 
 
 def main():
+
+  #define message types
+  GO_TO = 0
+  CALIBRATION = 1
+  GO_FISHIN = 2
+  DEPOSIT_FISH = 3
+
+  #define static locations
+  desposit_loc = [0, 0]
+
+
   #initialize Vision
   cap = cv2.VideoCapture(1)
   ramp_pts = calibrateRamps(cap)
@@ -29,7 +40,8 @@ def main():
   #initialize Comms
   comm = serialComm("dummy_port")
 
-  calibrateRobot(comm)
+  msg = buildMsg(CALIBRATION)
+  comm.sendPacket(msg)
 
   if not comm.valid:
     print "No Comm - Exiting"
@@ -40,19 +52,53 @@ def main():
     circle_mask, mask_center, mask_radius = makeCircleMask(frame, robot_pts)
     # circle_mask = findCircleMask(frame)
 
+    target_id = 0
+    while True:
+      # frame = getFrame(cap)
+      # cv2.imshow("Frame", frame)
+      #GOTO ramp location
+      target_id = (target_id +1)%8
+      print "Base Pixel:", robot_pts[0]
 
-    # while True:
-    #   #GOTO ramp location
-    #   #Wait for fish
-    #   #Grab Fish
-    #   #Deposit Fish
 
+      #target_id = random.randint(0, len(ramp_pts)-1)
+      target = ramp_pts[target_id]
+      print "Target Pixel:", target
+      target_loc = pixel2in(target, robot_pts[0], pixel_len)
+
+      msg = buildMsg(GO_TO, target_loc)
+      comm.sendPacket(msg)
+
+
+
+
+
+
+      #Wait for fish
+
+
+      #Grab Fish
+
+      msg = buildMsg(GO_FISHIN)
+      comm.sendPacket(msg)
+
+      #Deposit Fish
+      msg = buildMsg(GO_TO, desposit_loc)
+      comm.sendPacket(msg)
+
+      msg = buildMsg(DEPOSIT_FISH)
+      comm.sendPacket(msg)
+      print ""
+      raw_input()
+
+      if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 
     while cap.isOpened():
       frame = getFrame(cap)
       frame = cv2.bitwise_and(frame, circle_mask)
-      
+      hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
       #crop image
       # c1 = (mask_center[0]-mask_radius,mask_center[1]-mask_radius)
       # c2 = (mask_center[0]+mask_radius,mask_center[1]+mask_radius)
@@ -76,20 +122,25 @@ def main():
 
           cv2.circle(fish_mask, (i[0], i[1]), i[2], (255, 255, 255),-1)
           fish_mask = cv2.cvtColor(fish_mask, cv2.COLOR_BGR2GRAY)
-          # c1 = (i[0],i[1]-i[2])
-          # c2 = (i[0],i[1]+i[2])
-          # fish_mask, fish_mask_center, fish_mask_radius = makeCircleMask(frame, (c1, c2))
-          #cv2.imshow("fish_mask",fish_mask)
-          # fish_mask = cv2.cvtColor(fish_mask, cv2.COLOR_BGR2GRAY)
-          fish_mean, fish_std_dev = cv2.meanStdDev(gray, mask=fish_mask) 
-          #print type(fish_mean[0][0])
-          if fish_mean[0][0] > img_mean[0][0]*.55:
 
-            # if fis
-            # draw the outer circle
-            cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
-            # draw the center of the circle
-            cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+          cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
+          cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+
+
+          # # c1 = (i[0],i[1]-i[2])
+          # # c2 = (i[0],i[1]+i[2])
+          # # fish_mask, fish_mask_center, fish_mask_radius = makeCircleMask(frame, (c1, c2))
+          # #cv2.imshow("fish_mask",fish_mask)
+          # # fish_mask = cv2.cvtColor(fish_mask, cv2.COLOR_BGR2GRAY)
+          # fish_mean, fish_std_dev = cv2.meanStdDev(gray, mask=fish_mask) 
+
+          # print circle_num, fish_std_dev[0]
+          # #print type(fish_mean[0][0])
+          # if fish_std_dev[0][0] > 20:
+
+          # #   # if fis
+          # #   # draw the outer circle
+
 
 
 
@@ -124,15 +175,6 @@ def main():
       if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-
-
-
-
-def calibrateRobot(comm):
-  msg = buildMsg(1)
-  print "Message",msg
-  comm.sendPacket(msg)
-  return 0
 
 
 
