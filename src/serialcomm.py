@@ -29,7 +29,12 @@ class serialComm:
       if "dummy_port" in self.port:
         print "~"+msg
       else:
-        return self.ser.write('~'+msg)
+        self.ser.write('~'+msg)
+
+    response = ser.readline()
+    if "OK" in response
+    return
+
 
 
 def buildMsg(msg_type, args = []):

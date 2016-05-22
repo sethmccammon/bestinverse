@@ -53,46 +53,46 @@ def main():
     # circle_mask = findCircleMask(frame)
 
     target_id = 0
-    while True:
-      # frame = getFrame(cap)
-      # cv2.imshow("Frame", frame)
-      #GOTO ramp location
-      target_id = (target_id +1)%8
-      print "Base Pixel:", robot_pts[0]
+    # while True:
+    #   # frame = getFrame(cap)
+    #   # cv2.imshow("Frame", frame)
+    #   #GOTO ramp location
+    #   target_id = (target_id +1)%8
+    #   print "Base Pixel:", robot_pts[0]
 
 
-      #target_id = random.randint(0, len(ramp_pts)-1)
-      target = ramp_pts[target_id]
-      print "Target Pixel:", target
-      target_loc = pixel2in(target, robot_pts[0], pixel_len)
+    #   #target_id = random.randint(0, len(ramp_pts)-1)
+    #   target = ramp_pts[target_id]
+    #   print "Target Pixel:", target
+    #   target_loc = pixel2in(target, robot_pts[0], pixel_len)
 
-      msg = buildMsg(GO_TO, target_loc)
-      comm.sendPacket(msg)
-
-
-
+    #   msg = buildMsg(GO_TO, target_loc)
+    #   comm.sendPacket(msg)
 
 
 
-      #Wait for fish
 
 
-      #Grab Fish
 
-      msg = buildMsg(GO_FISHIN)
-      comm.sendPacket(msg)
+    #   #Wait for fish
 
-      #Deposit Fish
-      msg = buildMsg(GO_TO, desposit_loc)
-      comm.sendPacket(msg)
 
-      msg = buildMsg(DEPOSIT_FISH)
-      comm.sendPacket(msg)
-      print ""
-      raw_input()
+    #   #Grab Fish
 
-      if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    #   msg = buildMsg(GO_FISHIN)
+    #   comm.sendPacket(msg)
+
+    #   #Deposit Fish
+    #   msg = buildMsg(GO_TO, desposit_loc)
+    #   comm.sendPacket(msg)
+
+    #   msg = buildMsg(DEPOSIT_FISH)
+    #   comm.sendPacket(msg)
+    #   print ""
+    #   raw_input()
+
+    #   if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
 
 
     while cap.isOpened():
@@ -123,8 +123,7 @@ def main():
           cv2.circle(fish_mask, (i[0], i[1]), i[2], (255, 255, 255),-1)
           fish_mask = cv2.cvtColor(fish_mask, cv2.COLOR_BGR2GRAY)
 
-          cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
-          cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+
 
 
           # # c1 = (i[0],i[1]-i[2])
@@ -132,11 +131,13 @@ def main():
           # # fish_mask, fish_mask_center, fish_mask_radius = makeCircleMask(frame, (c1, c2))
           # #cv2.imshow("fish_mask",fish_mask)
           # # fish_mask = cv2.cvtColor(fish_mask, cv2.COLOR_BGR2GRAY)
-          # fish_mean, fish_std_dev = cv2.meanStdDev(gray, mask=fish_mask) 
+          fish_mean, fish_std_dev = cv2.meanStdDev(gray, mask=fish_mask) 
 
           # print circle_num, fish_std_dev[0]
           # #print type(fish_mean[0][0])
-          # if fish_std_dev[0][0] > 20:
+          if fish_mean[0][0] > .6*img_mean[0][0]:
+            cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
+            cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
 
           # #   # if fis
           # #   # draw the outer circle
@@ -175,7 +176,36 @@ def main():
       if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+def waitForFish(cap, loc, timeout = 15):
+  start_time = time.time()
+  dist_thresh = 10
+  while cap.isOpened():
+    frame = getFrame(cap)
+    frame = cv2.bitwise_and(frame, circle_mask)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray_circle_mask = cv2.cvtColor(circle_mask, cv2.COLOR_BGR2GRAY)
+    img_mean, img_std_dev = cv2.meanStdDev(gray, mask=gray_circle_mask)
+
+    circles = cv2.HoughCircles(gray,cv2.cv.CV_HOUGH_GRADIENT,1, minDist=50, param1=50,param2=30,minRadius=20,maxRadius=40)
+
+    if circles is not None:
+      circles = np.uint16(np.around(circles))
+      for circle_num, i in enumerate(circles[0,:]):
+        center = (i[0], i[1])
+        radius = i[2]
+
+        fish_mask = np.zeros(frame.shape, np.uint8)
+
+
+        cv2.circle(fish_mask, center, radius, (255, 255, 255),-1)
+        if dist(loc, center) > dist_thresh
+          return True
+
+    elapsed_time = time.time() - start_time
+    if elapsed_time > timeout:
+      return False
 
 
 if __name__ == "__main__":
