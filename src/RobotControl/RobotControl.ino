@@ -77,9 +77,15 @@ int stepsPerY = 150;
 float dropOff[] = {3.000,5.000};
 
 void loop() {
+  
   digitalWrite(enablePin,LOW);// Set Enable low
 
     if (I){
+       for(int ii = 90; ii >20; ii--){
+    s1.write(ii);
+    s2.write(ii);
+    delay(5);
+   }
       Serial.println("INTIALIZING");
    initialize();
    I = false;
@@ -92,7 +98,7 @@ void loop() {
    
  }
 
- while(!stringComplete and !motorsOff ){
+ while(!stringComplete and motorsOff ){
  if(Serial.available()){ // only send data back if data has been sent
     char inByte = Serial.read(); // read the incoming data
     
@@ -126,6 +132,7 @@ void loop() {
 
     }
     if (command == '1') { //Calibration
+      Serial.println("Calibration");
       initialize();
       Xposition = 100.0/stepsPerX;
       Yposition = 100.0/stepsPerY;
@@ -133,15 +140,27 @@ void loop() {
     }
     
     if (command == '2') { //Pick up a Fish
+    Serial.println("FISH");
       goFishing();
       Serial.write("OK");
     }
     
     if (command == '3') { // Deposit Fish
-      goTo(dropOff[0],dropOff[1],Xposition,Yposition);
-      Xposition = dropOff[0];
-      Yposition = dropOff[1];
-      goFishing();
+      //goTo(dropOff[0],dropOff[1],Xposition,Yposition);
+      //Xposition = dropOff[0];
+      //Yposition = dropOff[1];
+      Serial.println("DROP OFF");
+      
+       for(int ii = 20; ii <90; ii++){
+    s1.write(ii);
+    delay(5);
+   }
+goFishing();
+  delay(1000);
+  for(int ii = 90; ii >20; ii--){
+    s1.write(ii);
+    delay(5);
+   }
       Serial.write("OK");
     }
     
@@ -189,13 +208,13 @@ void goTo(float moveX,float moveY,float currX, float currY){
 //Pick up a fish
 void goFishing(){
    for(int ii = 20; ii <90; ii++){
-    s1.write(ii);
+    s2.write(ii);
     delay(5);
    }
 
   delay(1000);
   for(int ii = 90; ii >20; ii--){
-    s1.write(ii);
+    s2.write(ii);
     delay(10);
    }
   
