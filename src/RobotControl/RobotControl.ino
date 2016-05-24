@@ -131,7 +131,7 @@ void loop() {
       Serial.write("OK");
 
     }
-    if (command == '1') { //Calibration
+    else if (command == '1') { //Calibration
       Serial.println("Calibration");
       initialize();
       Xposition = 100.0/stepsPerX;
@@ -139,29 +139,36 @@ void loop() {
       Serial.write("OK");
     }
     
-    if (command == '2') { //Pick up a Fish
+    else if (command == '2') { //Pick up a Fish
     Serial.println("FISH");
       goFishing();
       Serial.write("OK");
     }
     
-    if (command == '3') { // Deposit Fish
+    else if (command == '3') { // Deposit Fish
       //goTo(dropOff[0],dropOff[1],Xposition,Yposition);
       //Xposition = dropOff[0];
       //Yposition = dropOff[1];
       Serial.println("DROP OFF");
       
        for(int ii = 20; ii <90; ii++){
-    s1.write(ii);
-    delay(5);
-   }
-goFishing();
-  delay(1000);
-  for(int ii = 90; ii >20; ii--){
-    s1.write(ii);
-    delay(5);
-   }
+        s1.write(ii);
+        delay(5);
+       }
+      goFishing();
+        delay(1000);
+      for(int ii = 90; ii >20; ii--){
+        s1.write(ii);
+        delay(5);
+       }
       Serial.write("OK");
+    }
+    else{
+     Serial.println("INVALID COMMAND");
+     inputString = "";
+    stringComplete = false;
+    Serial.flush();
+
     }
     
     
@@ -172,8 +179,7 @@ goFishing();
 
   
 }
-//Serial.println("FINISHED THE GAME");
-//}
+
 
 
 // GOTO command
