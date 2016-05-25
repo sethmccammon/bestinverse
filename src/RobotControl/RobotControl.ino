@@ -35,13 +35,13 @@ void setup()
   pinMode(enablePin,OUTPUT); // Enable
   pinMode(step1Step,OUTPUT); // Step
   pinMode(step1Dir,OUTPUT); // Dir
-  digitalWrite(enablePin,LOW); // Set Enable low
+ 
   
   pinMode(enablePin,OUTPUT); // Enable
   pinMode(step2Step,OUTPUT); // Step
   pinMode(step2Dir,OUTPUT); // Dir
-  digitalWrite(10,LOW); // Set Enable low
-  
+
+  digitalWrite(enablePin,LOW); // Set Enable low
   pinMode(limit1,INPUT); //Limit switch1
   pinMode(limit2,INPUT);
   pinMode(limit3,INPUT); 
@@ -83,22 +83,18 @@ void loop() {
     if (I){
        for(int ii = 90; ii >20; ii--){
     s1.write(ii);
-    s2.write(ii);
     delay(5);
    }
-      Serial.println("INTIALIZING");
-   initialize();
-   I = false;
-   posY(200);
- delay(1000);
- posX(200);
+   
+    s2.write(50);
+    delay(5);
  
- Xposition = 300.000/stepsPerX;
- Yposition = 300.000/stepsPerY;
+   I = false;
+ 
    
  }
 
- while(!stringComplete and motorsOff ){
+ while(!stringComplete ){
  if(Serial.available()){ // only send data back if data has been sent
     char inByte = Serial.read(); // read the incoming data
     
@@ -131,7 +127,7 @@ void loop() {
       Serial.write("OK");
 
     }
-    else if (command == '1') { //Calibration
+     if (command == '1') { //Calibration
       Serial.println("Calibration");
       initialize();
       Xposition = 100.0/stepsPerX;
@@ -139,13 +135,13 @@ void loop() {
       Serial.write("OK");
     }
     
-    else if (command == '2') { //Pick up a Fish
-    Serial.println("FISH");
+     if (command == '2') { //Pick up a Fish
+    //Serial.println("FISH");
       goFishing();
       Serial.write("OK");
     }
     
-    else if (command == '3') { // Deposit Fish
+    if (command == '3') { // Deposit Fish
       //goTo(dropOff[0],dropOff[1],Xposition,Yposition);
       //Xposition = dropOff[0];
       //Yposition = dropOff[1];
@@ -163,13 +159,13 @@ void loop() {
        }
       Serial.write("OK");
     }
-    else{
-     Serial.println("INVALID COMMAND");
-     inputString = "";
-    stringComplete = false;
-    Serial.flush();
-
-    }
+//    else{
+//     Serial.println("INVALID COMMAND");
+//     inputString = "";
+//    stringComplete = false;
+//    Serial.flush();
+//
+//    }
     
     
   }
@@ -213,13 +209,13 @@ void goTo(float moveX,float moveY,float currX, float currY){
 
 //Pick up a fish
 void goFishing(){
-   for(int ii = 20; ii <90; ii++){
+   for(int ii = 50; ii >30; ii--){
     s2.write(ii);
     delay(5);
    }
 
   delay(1000);
-  for(int ii = 90; ii >20; ii--){
+  for(int ii = 30; ii >50; ii++){
     s2.write(ii);
     delay(10);
    }
@@ -359,5 +355,7 @@ void initialize(){
     
   } 
   delay(1000);
+
+   
   
 };

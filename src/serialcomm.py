@@ -1,5 +1,5 @@
 import serial
-from time import sleep
+import time
 
 class serialComm:
   def __init__(self, port_in = '/dev/ttyACM0'):
@@ -21,6 +21,7 @@ class serialComm:
 
 
   def sendPacket(self, msg, timeout = .1):
+    
     max_msg_len = 16
     if len(msg) > max_msg_len:
       print "Error: Message Longer than Max Length"
@@ -29,11 +30,16 @@ class serialComm:
       if "dummy_port" in self.port:
         print "~"+msg
       else:
+        print "~"+msg
         self.ser.write('~'+msg)
+    start_time = time.time()
 
-    response = ser.readline()
-    if "OK" in response
-    return
+
+    while True:
+      response = self.ser.readline()
+      print response
+      if "OK" in response:
+        return
 
 
 

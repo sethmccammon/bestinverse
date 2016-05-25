@@ -196,7 +196,7 @@ def findFish(frame, circle_mask):
   return fish_contours
 
 
-def pixel2in(px, reference_pt, scale, offset = [1.25, 11.875]):
+def pixel2in(px, reference_pt, scale, offset = [-1.25, 5.25]):
   loc_pixels = map(operator.sub, px, reference_pt)
   #translate Axes
   loc_pixels = [-loc_pixels[1], -loc_pixels[0]]
