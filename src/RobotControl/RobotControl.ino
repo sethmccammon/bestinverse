@@ -93,19 +93,22 @@ void loop() {
  
    
  }
+ 
+
 
  while(!stringComplete ){
  if(Serial.available()){ // only send data back if data has been sent
     char inByte = Serial.read(); // read the incoming data
     
     
-    if (inByte == '~') {
-      inByte = ' ';
-      inputString += inByte;
+    if (inByte == '\n') {
+
       stringComplete = true; 
     }
-    
-    inputString += inByte;
+    if (inByte != '~')
+    {
+      inputString += inByte;
+    }
     }
 
   }
