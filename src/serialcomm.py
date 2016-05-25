@@ -31,14 +31,19 @@ class serialComm:
         print "~"+msg
       else:
         print "~"+msg
-        self.ser.write('~'+msg)
-    start_time = time.time()
-
+        buff = ""
+        message_recieved = False
+        while not message_recieved:
+          self.ser.write('~'+msg)
+          bytesToRead = ser.inWaiting()
+          buff = buff + str(self.ser.read(bytesToRead))
+          if "message_recieved" in buff:
+            message_recieved = True
 
     while True:
       response = self.ser.readline()
       print response
-      if "OK" in response:
+      if "action_complete" in response:
         return
 
 
