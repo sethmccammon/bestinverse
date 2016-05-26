@@ -50,10 +50,12 @@ void setup()
   s1.attach(servo1);
   s2.attach(servo2);
   
-  pinMode(startButton,INPUT); //Start Button
-  attachInterrupt(0,stopMotors, CHANGE);
+  pinMode(startButton,INPUT_PULLUP); //Start Button
+  attachInterrupt(0,stopMotors,LOW);
   
-  
+   s1.write(20);
+  s2.write(50);
+digitalWrite(enablePin,LOW);// Set Enable low
   
 }
 
@@ -78,21 +80,13 @@ float dropOff[] = {3.000,5.000};
 int fishHeight = 84;
 
 void loop() {
+
   
-  digitalWrite(enablePin,LOW);// Set Enable low
-  if(I) {
-    s1.write(20);
-   
-    s2.write(fishHeight);
-    delay(5);
- 
-   I = false;
-  }
-
  
 
 
- while(!stringComplete ){
+
+ while(!stringComplete && digitalRead(startButton)){
  if(Serial.available()){ // only send data back if data has been sent
     char inByte = Serial.read(); // read the incoming data
    
@@ -112,7 +106,7 @@ void loop() {
 
   }
   
-  if(inputString != ""){
+  if(inputString != "" && digitalRead(startButton)){
     //Serial.println(inputString);
     char command = inputString[0];
     if (command == '0'){ //GOTO
@@ -241,11 +235,11 @@ void goTo(float moveX,float moveY,float currX, float currY){
 
 //Pick up a fish
 void goFishing(){
-  for(int x = 0;x <5;x++){
-  delay(2000);
-   for(int ii = 80; ii <90; ii++){
+
+  
+   for(int ii = 70; ii <90; ii++){
     s2.write(ii);
-    delay(100);
+    delay(200);
    }
 
   delay(1000);
@@ -253,13 +247,13 @@ void goFishing(){
     s2.write(ii);
     delay(10);
    }
-  }
+  
   
 };
 
 void stopMotors(){
-  motorsOff = !motorsOff;
-  digitalWrite(enablePin,motorsOff);
+ // digitalWrite(enablePin,HIGH);
+
 
 }
 
