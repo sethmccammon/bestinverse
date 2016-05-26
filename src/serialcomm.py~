@@ -35,8 +35,9 @@ class serialComm:
         message_recieved = False
         while not message_recieved:
           self.ser.write('~'+msg+'\n')
-          bytesToRead = ser.inWaiting()
-          buff = buff + str(self.ser.read(bytesToRead))
+          bytesToRead = self.ser.inWaiting()
+          buff = buff + str(self.ser.read(bytesToRead)) 
+					print buff
           if "message_recieved" in buff:
             message_recieved = True
 

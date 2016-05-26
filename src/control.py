@@ -43,9 +43,14 @@ def main():
 
 
   msg = buildMsg(CALIBRATION)
-  comm.sendPacket(msg)
 
   comm.sendPacket(msg)
+  
+  target_loc = [4.700,5.000]
+  msg = buildMsg(GO_TO, target_loc)
+  comm.sendPacket(msg)
+
+
 
   
   if not comm.valid:
@@ -62,17 +67,17 @@ def main():
       # frame = getFrame(cap)
       # cv2.imshow("Frame", frame)
       #GOTO ramp location
-      target_id = (target_id +1)%8
-      print "Base Pixel:", robot_pts[0]
-
-
-      #target_id = random.randint(0, len(ramp_pts)-1)
-      target = ramp_pts[target_id]
-      print "Target Pixel:", target
-      target_loc = pixel2in(target, robot_pts[0], pixel_len)
-
-      msg = buildMsg(GO_TO, target_loc)
-      comm.sendPacket(msg)
+#      target_id = (target_id +1)%8
+#      print "Base Pixel:", robot_pts[0]
+#
+#
+#      #target_id = random.randint(0, len(ramp_pts)-1)
+#      target = ramp_pts[target_id]
+#      print "Target Pixel:", target
+#      target_loc = pixel2in(target, robot_pts[0], pixel_len)
+#      target_loc = [4.700,5.000]
+#      msg = buildMsg(GO_TO, target_loc)
+#      comm.sendPacket(msg)
 
 
 
@@ -87,9 +92,6 @@ def main():
       msg = buildMsg(GO_FISHIN)
       comm.sendPacket(msg)
 
-      #Deposit Fish
-      msg = buildMsg(GO_TO, desposit_loc)
-      comm.sendPacket(msg)
 
       msg = buildMsg(DEPOSIT_FISH)
       comm.sendPacket(msg)

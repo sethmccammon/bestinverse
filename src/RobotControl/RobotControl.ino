@@ -10,16 +10,16 @@ Servo s1;
 Servo s2;
 
 int limit1 = 13;
-int limit2 = 3;
-int limit3 = 4;
+int limit2 = 4;
+int limit3 = 3;
 int limit4 = 5;
 
-int step1Dir = 6;
-int step1Step = 7;
-int step2Dir = 8;
+int step1Dir = 7;
+int step1Step = 6;
+int step2Dir = 10;
 int step2Step = 9;
 
-int enablePin = 10;
+int enablePin = 8;
 
 int servo1 = 11;
 int servo2 = 12;
@@ -75,35 +75,34 @@ int stepsPerX = 150;
 int stepsPerY = 150;
 
 float dropOff[] = {3.000,5.000};
+int fishHeight = 84;
 
 void loop() {
   
   digitalWrite(enablePin,LOW);// Set Enable low
-
-    if (I){
-       for(int ii = 90; ii >20; ii--){
-    s1.write(ii);
-    delay(5);
-   }
+  if(I) {
+    s1.write(20);
    
-    s2.write(50);
+    s2.write(fishHeight);
     delay(5);
  
    I = false;
- 
-   
- }
+  }
+
  
 
 
  while(!stringComplete ){
  if(Serial.available()){ // only send data back if data has been sent
     char inByte = Serial.read(); // read the incoming data
-    
+   
     
     if (inByte == '\n') {
 
-      stringComplete = true; 
+      stringComplete = true;
+       Serial.println(inputString); 
+      Serial.flush();
+
     }
     if (inByte != '~')
     {
@@ -112,10 +111,14 @@ void loop() {
     }
 
   }
+  
   if(inputString != ""){
-    Serial.println(inputString);
+    //Serial.println(inputString);
     char command = inputString[0];
     if (command == '0'){ //GOTO
+      Serial.write("message_recieved");
+      Serial.flush();
+      //delay(10);
      String X = inputString.substring(2,7);
      String Y = inputString.substring(8,13);
      char floatbuf[32]; // make this at least big enough for the whole string
@@ -127,40 +130,62 @@ void loop() {
       goTo(x,y,Xposition,Yposition);
       Xposition = x;
       Yposition = y;
-      Serial.write("OK");
+      
+      Serial.write("action_complete");
+      Serial.flush();
 
     }
      if (command == '1') { //Calibration
-      Serial.println("Calibration");
+     Serial.write("message_recieved");
+     Serial.flush();
+      //delay(10);
       initialize();
       Xposition = 100.0/stepsPerX;
       Yposition = 100.0/stepsPerY;
-      Serial.write("OK");
+      Serial.write("action_complete");
+      Serial.flush();
     }
     
      if (command == '2') { //Pick up a Fish
     //Serial.println("FISH");
+    Serial.write("message_recieved");
+    Serial.flush();
       goFishing();
-      Serial.write("OK");
+     
+      Serial.write("action_complete");
+ 
     }
     
     if (command == '3') { // Deposit Fish
       //goTo(dropOff[0],dropOff[1],Xposition,Yposition);
       //Xposition = dropOff[0];
       //Yposition = dropOff[1];
-      Serial.println("DROP OFF");
+      Serial.write("message_recieved");
+      Serial.flush();
+     // delay(10);
+      //Serial.println("DROP OFF");
       
-       for(int ii = 20; ii <90; ii++){
+       for(int ii = 20; ii <100; ii++){
         s1.write(ii);
-        delay(5);
+        delay(10);
        }
-      goFishing();
+       
+       for(int ii = 50; ii <100; ii++){
+    s2.write(ii);
+    delay(5);
+   }
+      s2.write(50);
         delay(1000);
-      for(int ii = 90; ii >20; ii--){
+      for(int ii = 100; ii >20; ii--){
         s1.write(ii);
-        delay(5);
+        delay(30);
        }
-      Serial.write("OK");
+       for(int ii = 50; ii <fishHeight; ii++){
+    s2.write(ii);
+    delay(5);
+   }
+      Serial.write("action_complete");
+      Serial.flush();
     }
 //    else{
 //     Serial.println("INVALID COMMAND");
@@ -169,12 +194,16 @@ void loop() {
 //    Serial.flush();
 //
 //    }
-    
-    
-  }
-  inputString = "";
+    inputString = "";
   stringComplete = false;
   Serial.flush();
+ // delay(100);
+    
+  }
+//  inputString = "";
+//  stringComplete = false;
+//  Serial.flush();
+//  delay(1000);
 
   
 }
@@ -188,40 +217,43 @@ void goTo(float moveX,float moveY,float currX, float currY){
  
  
  if (stepsX < 0){
-   Serial.print("MOVE negative X: ");
-   Serial.println(stepsX);
-  negX(stepsX);   
+  // Serial.print("MOVE negative X: ");
+  // Serial.println(stepsX);
+  negX(abs(stepsX));   
  }
  else if (stepsX > 0) {
-    Serial.print("MOVE positive X: ");
-   Serial.println(stepsX);
+  //  Serial.print("MOVE positive X: ");
+  // Serial.println(stepsX);
   posX(stepsX); 
  }
  
   if (stepsY < 0){
-     Serial.print("MOVE negative Y: ");
-   Serial.println(stepsY);
-  negY(stepsY);   
+   //  Serial.print("MOVE negative Y: ");
+  // Serial.println(stepsY);
+  negY(abs(stepsY));   
  }
  else if (stepsY > 0) {
-   Serial.print("MOVE positive Y: ");
-   Serial.println(stepsY);
+ //  Serial.print("MOVE positive Y: ");
+  // Serial.println(stepsY);
   posY(stepsY); 
  }
 };
 
 //Pick up a fish
 void goFishing(){
-   for(int ii = 50; ii >30; ii--){
+  for(int x = 0;x <5;x++){
+  delay(2000);
+   for(int ii = 80; ii <90; ii++){
     s2.write(ii);
-    delay(5);
+    delay(100);
    }
 
   delay(1000);
-  for(int ii = 30; ii >50; ii++){
+  for(int ii = 90; ii >50; ii--){
     s2.write(ii);
     delay(10);
    }
+  }
   
 };
 
@@ -290,6 +322,7 @@ void negY(int steps){
 
 //Initialization 
 void initialize(){
+  s2.write(30);
   digitalWrite(step1Dir,HIGH); 
   digitalWrite(step2Dir,HIGH);// Set Dir high
   int i = 0;
@@ -309,7 +342,7 @@ void initialize(){
    }
   
   }
-  Serial.println("StOP");
+  //Serial.println("StOP");
   
   digitalWrite(step1Dir,LOW); 
   digitalWrite(step2Dir,LOW);// Set Dir high
@@ -343,7 +376,7 @@ void initialize(){
    }
   
   }
-  Serial.println("StOP");
+ // Serial.println("StOP");
   
   digitalWrite(step1Dir,HIGH); 
   digitalWrite(step2Dir,LOW);// Set Dir high

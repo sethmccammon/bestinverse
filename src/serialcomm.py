@@ -20,7 +20,7 @@ class serialComm:
 
 
 
-  def sendPacket(self, msg, timeout = .1):
+  def sendPacket(self, msg, timeout = .01):
     
     max_msg_len = 16
     if len(msg) > max_msg_len:
@@ -33,16 +33,24 @@ class serialComm:
         print "~"+msg
         buff = ""
         message_recieved = False
+        self.ser.write('~'+msg+'\n')
         while not message_recieved:
-          self.ser.write('~'+msg+'\n')
-          bytesToRead = ser.inWaiting()
-          buff = buff + str(self.ser.read(bytesToRead))
+          
+          bytesToRead = self.ser.inWaiting()
+          buff = buff + str(self.ser.read(bytesToRead)) 
+          if len(buff) > 2:
+            print buff
+
           if "message_recieved" in buff:
             message_recieved = True
-
+            print buff
+    response = ""
     while True:
-      response = self.ser.readline()
-      print response
+      
+      #bytesToRead = self.ser.inWaiting()
+      response = response + str(self.ser.read(bytesToRead))
+      #response = self.ser.readline()
+      #print response
       if "action_complete" in response:
         return
 
