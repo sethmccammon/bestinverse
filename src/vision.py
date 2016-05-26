@@ -58,6 +58,7 @@ def calibrateBoard(cap):
   calib_dist = 7.875
 
   # cap = cv2.VideoCapture(1)
+  cv2.namedWindow("Frame")
   cv2.setMouseCallback("Frame", getRobotPixelLoc)
 
   while cap.isOpened():

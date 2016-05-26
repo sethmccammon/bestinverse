@@ -44,15 +44,15 @@ class serialComm:
           if "message_recieved" in buff:
             message_recieved = True
             print buff
-    response = ""
-    while True:
-      
-      #bytesToRead = self.ser.inWaiting()
-      response = response + str(self.ser.read(bytesToRead))
-      #response = self.ser.readline()
-      #print response
-      if "action_complete" in response:
-        return
+        response = ""
+        while True:
+          
+          #bytesToRead = self.ser.inWaiting()
+          response = response + str(self.ser.read(bytesToRead))
+          #response = self.ser.readline()
+          #print response
+          if "action_complete" in response:
+            return
 
 
 
