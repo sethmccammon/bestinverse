@@ -53,9 +53,11 @@ void setup()
   pinMode(startButton,INPUT_PULLUP); //Start Button
   attachInterrupt(0,stopMotors,LOW);
   
-   s1.write(20);
-  s2.write(50);
+   s1.write(30);
+  s2.write(70);
 digitalWrite(enablePin,LOW);// Set Enable low
+
+
   
 }
 
@@ -76,12 +78,21 @@ boolean stringComplete = false;
 int stepsPerX = 150;
 int stepsPerY = 150;
 
-float dropOff[] = {3.000,5.000};
-int fishHeight = 84;
+float dropOff[] = {4.500,4.000};
+int fishHeight = 70;
 
 void loop() {
 
-  
+//  if(I && digitalRead(startButton)){
+//    initialize();
+//      Xposition = 100.0/stepsPerX;
+//      Yposition = 100.0/stepsPerY;
+//     I = false; 
+//   
+//     goTo(4.500,4.500,Xposition,Yposition);
+//      Xposition = x;
+//      Yposition = y;
+//  }
  
 
 
@@ -124,7 +135,7 @@ void loop() {
       goTo(x,y,Xposition,Yposition);
       Xposition = x;
       Yposition = y;
-      
+      delay(500);
       Serial.write("action_complete");
       Serial.flush();
 
@@ -146,20 +157,15 @@ void loop() {
     Serial.flush();
       goFishing();
      
-      Serial.write("action_complete");
- 
-    }
-    
-    if (command == '3') { // Deposit Fish
-      //goTo(dropOff[0],dropOff[1],Xposition,Yposition);
-      //Xposition = dropOff[0];
-      //Yposition = dropOff[1];
+      goTo(dropOff[0],dropOff[1],Xposition,Yposition);
+      Xposition = dropOff[0];
+      Yposition = dropOff[1];
       Serial.write("message_recieved");
       Serial.flush();
      // delay(10);
       //Serial.println("DROP OFF");
       
-       for(int ii = 20; ii <100; ii++){
+       for(int ii = 30; ii <100; ii++){
         s1.write(ii);
         delay(10);
        }
@@ -170,7 +176,40 @@ void loop() {
    }
       s2.write(50);
         delay(1000);
-      for(int ii = 100; ii >20; ii--){
+      for(int ii = 100; ii >30; ii--){
+        s1.write(ii);
+        delay(30);
+       }
+       for(int ii = 50; ii <fishHeight; ii++){
+    s2.write(ii);
+    delay(5);
+   }
+      Serial.write("action_complete");
+      Serial.flush();
+ 
+    }
+    
+    if (command == '3') { // Deposit Fish
+      goTo(dropOff[0],dropOff[1],Xposition,Yposition);
+      Xposition = dropOff[0];
+      Yposition = dropOff[1];
+      Serial.write("message_recieved");
+      Serial.flush();
+     // delay(10);
+      //Serial.println("DROP OFF");
+      
+       for(int ii = 30; ii <100; ii++){
+        s1.write(ii);
+        delay(10);
+       }
+       
+       for(int ii = 50; ii <100; ii++){
+    s2.write(ii);
+    delay(5);
+   }
+      s2.write(50);
+        delay(1000);
+      for(int ii = 100; ii >30; ii--){
         s1.write(ii);
         delay(30);
        }
@@ -237,9 +276,9 @@ void goTo(float moveX,float moveY,float currX, float currY){
 void goFishing(){
 
   
-   for(int ii = 70; ii <90; ii++){
+   for(int ii = 60; ii <90; ii++){
     s2.write(ii);
-    delay(200);
+    delay(50);
    }
 
   delay(1000);
